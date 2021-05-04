@@ -1,0 +1,27 @@
+.scroll-window {
+  height: 25rem;
+  overflow-y: auto;
+}
+.message-card-dark {
+  background-color: white;
+  border-radius: 0.5rem;
+  color: black;
+  padding: 0.5rem;
+}
+.message-content-dark {
+  background-color: #dddddd;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+}
+
+.message-card-light {
+  background-color: #dddddd;
+  border-radius: 0.5rem;
+  color: black;
+  padding: 0.5rem;
+}
+.message-content-light {
+  background-color: #aaaaaa;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+}
