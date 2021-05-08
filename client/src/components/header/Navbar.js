@@ -105,7 +105,7 @@ const recruitMenu = [
 ];
 const loggedinRecruitMenu = [
   {
-    url: "/add/recruitment/post",
+    url: "/recruitment/post",
     label: "Create recruitment post",
   },
   {
@@ -119,14 +119,9 @@ const loggedinRecruitMenu = [
 ];
 const accountMenu = [
   {
-    url: "/add",
-    label: "Add to Account",
-  },
-  {
-    url: "/account",
+    url: "/profile",
     label: "Profiles",
   },
-  { url: "/alliance", label: "Alliance" },
   { url: "/clan", label: "Clan" },
   {
     url: "/user/settings",
@@ -136,7 +131,6 @@ const accountMenu = [
 // give redux store to component props
 const mapStateToProps = (state) => {
   return {
-    user: state.user,
     auth: state.auth,
   };
 };

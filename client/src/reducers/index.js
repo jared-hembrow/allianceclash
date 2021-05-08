@@ -4,11 +4,20 @@ import { combineReducers } from "redux";
 // import the form reducer from redux-form
 import { reducer as formReducer } from "redux-form";
 // account reducers
-import registerNewUserReducer from "./accountReducers/registerNewUserReducer";
+// import registerNewUserReducer from "./accountReducers/registerNewUserReducer";
 import {
-  logUserReducer,
   signInOutReducer,
-} from "./accountReducers/logUserReducer";
+  addToAccountReducer,
+} from "./accountReducers/userReducers";
+
+import { settingsReducer } from "./accountReducers/settingsReducer";
+// recruitment reducers
+import {
+  createRecruitmentReducer,
+  checkRecruitmentReducer,
+  fetchRecruitmentPostsReducer,
+} from "./recruitmentReducers/recruitmentReducers";
+/*
 import {
   gameAccountReducer,
   allianceAccountReducer,
@@ -23,6 +32,8 @@ import {
   fetchAllianceChat,
   joinRequestReducer,
 } from "./allianceReducers/allianceReducer";
+*/
+
 // clan reducers
 import {
   clansDetailsReducer,
@@ -32,11 +43,7 @@ import {
 import playerProfileReducer from "./cocReducers/playerProfileReducer";
 import { clanReducer, multipleClanReducer } from "./cocReducers/clanReducer";
 import { warReducer, postAttackReducer } from "./cocReducers/warReducer";
-// recruitment reducers
-import checkRecruitmentReducer from "./recruitmentReducers/checkRecruitmentReducer";
-import { fetchRecruitmentPostsReducer } from "./recruitmentReducers/fetchRecruitmentReducer";
-import { settingsReducer } from "./accountReducers/settingsReducer";
-import { createRecruitmentReducer } from "./recruitmentReducers/createRecruitmentReducer";
+
 // war management reducers
 import { warManagementReducer } from "./managementReducers/warManagementReducer";
 // search reducers
@@ -48,12 +55,12 @@ export default combineReducers({
   // account reducers
   auth: signInOutReducer,
 
-  registerStatus: registerNewUserReducer,
-  user: logUserReducer,
+  settingsStatus: settingsReducer,
+  addAccountStatus: addToAccountReducer,
+  /*
   gameAccounts: gameAccountReducer,
   allianceAccounts: allianceAccountReducer,
-  settingsStatus: settingsReducer,
-
+registerStatus: registerNewUserReducer,
   // add clash account reducer
   addClashAccount: addGameAccount,
 
@@ -68,6 +75,8 @@ export default combineReducers({
   // ---
   // create alliance errors
   allianceStatus: createAllianceReducer,
+
+  */
   // clan
   clan: clansDetailsReducer,
   allianceInviteList: allianceInviteListReducer,

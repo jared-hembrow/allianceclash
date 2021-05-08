@@ -15,7 +15,8 @@ import json
 def check_user_exists():
     user = User_sql(request.args.get('id'))
     if user.query("user") is None:
-        user.create_new_user()
+        #user.create_new_user()
+        return {"result": "user does not exist", "userId": request.args.get('id')}
     return {"result": "success", "content": user.profile()}
     
 # update front ends current users data
@@ -26,25 +27,38 @@ def update_user_profile():
         return {"result": "Invalid"}
     else:
         return {"result": "success", "content": user.profile()}
+# route to create new users account 
+@app.route('/api/user/create', methods=['POST'])
+def create_new_user():
+    if request.method == "POST":
+        form = json.loads(request.data.decode())
+        print(form)
+        try:
+            user = User_sql(form["id"])
+            user.create_new_user(form)
+            return {"result": "success", "content": user.profile()}
+        except:
+            return {"result": "unsuccessful"}
 
 # fetch settings and user details to be changed on react settings form
-@app.route('/user/update/settings', methods=["POST"])
+@app.route('/api/user/update/settings', methods=["POST"])
 def user_settings():
     if request.method == "POST":
-        incoming_data = request.data.decode('utf-8')
-        form = json.loads(incoming_data)
-        user_id = request.args.get('id')
-        print(user_id, ":", form)
-        settings_update = update_settings_user(user_id, form)
-        if settings_update == 'success':
-            return {"result": "success"}
-        else:
+        form = json.loads(request.data.decode('utf-8'))
+        try:
+            user = User_sql(request.args.get('id'))
+            user.update_settings(form)
+            user.update_user(form)
+        except:
             return {"result": "error"}
+        return {"result": "success"}
+            
+
+
+
 # add coc account to user profile and verify its acturally them
 @app.route('/api/user/add-game-account', methods=['POST'])
 def add_game_account():
-    # decode post request
-    incoming_data = request.data.decode('utf-8')
     # create user class
     user = User_sql(request.args.get('id'))
     # check if user exists
@@ -52,12 +66,12 @@ def add_game_account():
         return {"result": "Invalid"}
     # process form data from post request
     try:
-        form = json.loads(incoming_data)
+        form = json.loads(request.data.decode('utf-8'))
         form["tag"] = form["tag"].upper()
     except:
         return {"result": "Invalid"}
     # loop though accounts already linked to user and check if perposed account is already linked
-    for account in user.query("cocaccounts"):
+    for account in user.query("accounts"):
         if form["tag"] == account["account_tag"]:
             # return message if already linked
             return {"result": "account is already linked to your profile"}
@@ -71,7 +85,7 @@ def add_game_account():
         # if player does not already exist or is out of date then call COC API
         player_data = create_player.insert_or_update()
         # insert details into cocaccounts table linked to user
-        user.insert_cocaccounts({
+        user.insert_account({
             "tag": form["tag"],
             "clan_tag": player_data["clan_tag"],
             "role": player_data["role"]
@@ -91,14 +105,6 @@ def check_game_accounts():
     user_id = request.args.get('id')
     user_accounts = query_cocaccounts(user_id)
     return {"result": "success" ,"content":user_accounts}
-
-@app.route('/user/alliance-accounts', methods=["GET"])
-def check_alliance_accounts():
-    user_id = request.args.get('id')
-    alliance_accounts = query_cocalliance(user_id)
-    return {"result": "success", "content": alliance_accounts}
-
-
 
 @app.route('/api/user', methods=["GET"])
 def user_data():

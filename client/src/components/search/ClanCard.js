@@ -10,33 +10,7 @@ class ClanCard extends React.Component {
   componentWillUnmount() {
     this.props.clearResults();
   }
-  canInvite = (alliances, theme, tag, name, user) => {
-    if (!alliances) {
-      return null;
-    }
-    console.log(user);
-    for (let i = 0; i < alliances.length; i++) {
-      for (let i = 0; i < user.accounts.length; i++) {
-        if (user.accounts[i].clan_tag === tag) {
-          return null;
-        }
-      }
-      if (alliances[i].role === "leader" || alliances[i].role === "co-leader") {
-        return (
-          <button
-            onClick={() =>
-              history.push(`/invite/${encodeTag(tag)}/${name}/clan`)
-            }
-            style={{ marginLeft: "1rem" }}
-            className={`ui ${theme.mode} green button`}
-          >
-            Invite
-          </button>
-        );
-      }
-      console.log(alliances[i]);
-    }
-  };
+
   render() {
     if (!this.props.results.hasOwnProperty("warLog")) {
       return null;
@@ -44,11 +18,10 @@ class ClanCard extends React.Component {
     const profile = this.props.results;
     const theme = this.props.theme;
     const user = this.props.user;
-    const permissions = user.alliances ? user.alliances : false;
     const log =
-      profile.warLog.log.items.length > 3
-        ? profile.warLog.log.items.slice(0, 3)
-        : profile.warLog.log.items;
+      profile.warLog.war_list.items.length > 3
+        ? profile.warLog.war_list.items.slice(0, 3)
+        : profile.warLog.war_list.items;
     return (
       <div
         className={`ui ${theme.mode} segment`}
@@ -62,18 +35,11 @@ class ClanCard extends React.Component {
               <div className="ui header">
                 <h1>
                   <img
-                    src={profile.badgeUrls.medium}
+                    src={profile.badge_url.medium}
                     className="ui avatar image"
                     alt="clan badge"
                   />
                   {profile.name}
-                  {this.canInvite(
-                    permissions,
-                    theme,
-                    profile.tag,
-                    profile.name,
-                    user
-                  )}
                 </h1>
               </div>
               {profile.tag.toUpperCase()}
@@ -89,20 +55,22 @@ class ClanCard extends React.Component {
             <tbody>
               <tr>
                 <td>Level:</td>
-                <td>{profile.clanLevel}</td>
+                <td>{profile.clan_level}</td>
                 <td>Members:</td>
-                <td>{`${profile.members}/50`}</td>
+                <td>{`${profile.member_count}/50`}</td>
                 <td>Location:</td>
                 <td>{profile.location.name}</td>
               </tr>
               <tr>
                 <td>Trophies:</td>
-                <td>{profile.clanPoints}</td>
+                <td>{profile.clan_points}</td>
                 <td>War Wins:</td>
-                <td>{profile.warWins}</td>
+                <td>{profile.war_wins}</td>
                 <td>League:</td>
                 <td>
-                  {profile.warLeague.name ? profile.warLeague.name : "Unranked"}
+                  {profile.war_league.name
+                    ? profile.war_league.name
+                    : "Unranked"}
                 </td>
               </tr>
               <tr></tr>

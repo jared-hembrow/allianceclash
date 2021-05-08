@@ -3,17 +3,22 @@ import { connect } from "react-redux";
 import { Link } from "react-router-dom";
 import history from "../../History";
 // action
-import { fetchCocProfile } from "../../actions/coc/cocProfileActions";
-import { fetchMultipleClanDetails } from "../../actions/coc/cocClanActions";
+import { updateUserData } from "../../actions/accountActions";
+
 // local imports
-import Profile from "../cocAccount/Profile";
-import ProfileClan from "../cocAccount/ProfileClan";
-import AlllianceProfile from "../alliance/AllianceProfile";
+import ProfileView from "./ProfileView";
+import ProfileClan from "./ProfileClan";
+import Loader from "../Loader";
 // account class component
-class Account extends React.Component {
+class Profile extends React.Component {
   state = {
     menu: "",
   };
+  componentDidMount() {
+    if (this.props.auth.isSignedIn) {
+      this.props.updateUserData(this.props.auth.user.userDetails.id);
+    }
+  }
   renderMenu = (type) => {
     if (this.state.menu === type) {
       this.setState({ menu: " " });
@@ -26,7 +31,7 @@ class Account extends React.Component {
     if (user.players.length > 0) {
       return user.players.map((profile) => {
         return (
-          <Profile
+          <ProfileView
             key={profile.name + profile.tag}
             theme={theme}
             profile={profile.player}
@@ -84,12 +89,15 @@ class Account extends React.Component {
       case "Clan":
         return this.renderClanProfile(theme, user);
       case "Alliance":
-        return <AlllianceProfile />;
+        return;
       default:
         return null;
     }
   };
   render() {
+    if (!this.props.auth.isSignedIn) {
+      return <Loader />;
+    }
     console.log(this.props);
     const user = this.props.auth.user;
     const theme = this.props.auth.settings;
@@ -102,6 +110,14 @@ class Account extends React.Component {
           <h1 className={`ui ${theme.mode} header`}>
             {user.userDetails.player_name}
           </h1>
+
+          <Link
+            to={`/add-account/${this.props.auth.user.userDetails.id}`}
+            className={`ui ${theme.mode} green button`}
+          >
+            <i className="plus icon" />
+            Add Account
+          </Link>
         </div>
         <div
           className={`ui ${theme.mode} segment`}
@@ -132,14 +148,6 @@ class Account extends React.Component {
               >
                 Clan
               </button>
-              <button
-                onClick={(e) => this.renderMenu("Alliance")}
-                className={
-                  this.state.menu === "Alliance" ? "item active" : "item"
-                }
-              >
-                Alliance
-              </button>
             </div>
           )}
           <div>{this.renderMenuContent(this.state.menu, theme, user)}</div>
@@ -156,6 +164,5 @@ const mapStateToProps = (state) => {
 };
 
 export default connect(mapStateToProps, {
-  fetchCocProfile,
-  fetchMultipleClanDetails,
-})(Account);
+  updateUserData,
+})(Profile);

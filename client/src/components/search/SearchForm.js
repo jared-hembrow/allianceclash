@@ -37,7 +37,7 @@ class SearchForm extends React.Component {
   onSubmit = (formValues) => {
     const form = formValues;
     if (!formValues.type) {
-      form.type = "alliance";
+      form.type = "clan";
     }
     console.log(form);
     this.props.onSubmit(form);
@@ -57,7 +57,6 @@ class SearchForm extends React.Component {
             </div>
             <div className="column">
               <Field name="type" component="select">
-                <option value="alliance">Alliance</option>
                 <option value="clan">Clan</option>
                 <option value="player">Player</option>
               </Field>

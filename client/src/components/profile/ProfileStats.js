@@ -176,6 +176,25 @@ const ProfileStats = (props) => {
             </h4>
           </td>
         </tr>
+        {profile.legend_statistics.currentSeason ? (
+          <tr>
+            <td>
+              <h4 className={`ui ${theme.mode} image header`}>
+                <img
+                  alt="profile Stat"
+                  className="ui avatar image"
+                  src="/static/images/coc/legendTrophy.png"
+                />
+                <div className="content">
+                  {"Best Legends Trophies"}
+                  <div className=" sub header">
+                    {profile.legend_statistics.bestSeason.trophies}
+                  </div>
+                </div>
+              </h4>
+            </td>
+          </tr>
+        ) : null}
       </tbody>
     </table>
   );

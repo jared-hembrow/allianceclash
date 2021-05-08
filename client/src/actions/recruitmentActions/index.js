@@ -7,7 +7,7 @@ export const CREATE_RECRUITMENT_POST_ERROR = "CREATE_RECRUITMENT_POST_ERROR";
 export const createNewRecruitmentPost = (id, formValues) => async (
   dispatch
 ) => {
-  const response = await fetch(`/user/recruitment/post/new?id=${id}`, {
+  const response = await fetch(`/api/user/recruitment/post/new?id=${id}`, {
     method: "POST",
     body: JSON.stringify(formValues),
   }).then((result) => result.json());
@@ -34,7 +34,7 @@ export const CHECK_RECRUITMENT_POST_EXISTING =
 
 export const checkRecruitmentPost = (id, type) => async (dispatch) => {
   const response = await fetch(
-    `/user/recruitment/post/check?id=${id}&type=${type}`,
+    `/api/user/recruitment/post/check?id=${id}&type=${type}`,
     {
       method: "GET",
     }
@@ -58,66 +58,20 @@ export const clearRecruitmentCheck = () => {
 };
 
 // fetch recruitment posts
-// action types end of const name is type and what looking for
-export const FETCH_RECRUITMENT_POSTS_CLAN_MEMBERS =
-  "FETCH_RECRUITMENT_POSTS_CLAN_MEMBERS";
-export const FETCH_RECRUITMENT_POSTS_ALLIANCE_CLANS =
-  "FETCH_RECRUITMENT_POSTS_ALLIANCE_CLANS";
-export const FETCH_RECRUITMENT_POSTS_ALLIANCE_PLAYERS =
-  "FETCH_RECRUITMENT_POSTS_ALLIANCE_PLAYERS";
-export const FETCH_RECRUITMENT_POSTS_CLAN_ALLIANCE =
-  "FETCH_RECRUITMENT_POSTS_CLAN_ALLIANCE";
-export const FETCH_RECRUITMENT_POSTS_PLAYER_CLAN_ALLIANCE =
-  "FETCH_RECRUITMENT_POSTS_PLAYER_CLAN_ALLIANCE";
-// no posts exists
-export const FETCH_RECRUITMENT_POSTS_NONE_EXIST =
-  "FETCH_RECRUITMENT_POSTS_NONE_EXIST";
+// action types
+export const FETCH_RECRUITMENT_POSTS = "FETCH_RECRUITMENT_POSTS_CLAN_MEMBERS";
+
 export const fetchRecruitmentPosts = (type) => async (dispatch) => {
-  const response = await fetch(`/recruitment/post?type=${type}`, {
+  const response = await fetch(`/api/recruitment/post?type=${type}`, {
     method: "GET",
   }).then((result) => result.json());
-  if (
-    response.result === "success" &&
-    response.type === "Clan looking for members"
-  ) {
+  if (response.result === "success") {
     return dispatch({
-      type: FETCH_RECRUITMENT_POSTS_CLAN_MEMBERS,
-      payload: response.content,
-    });
-  } else if (
-    response.result === "success" &&
-    response.type === "Alliance looking for clans"
-  ) {
-    return dispatch({
-      type: FETCH_RECRUITMENT_POSTS_ALLIANCE_CLANS,
-      payload: response.content,
-    });
-  } else if (
-    response.result === "success" &&
-    response.type === "Alliance looking for Players"
-  ) {
-    return dispatch({
-      type: FETCH_RECRUITMENT_POSTS_ALLIANCE_PLAYERS,
-      payload: response.content,
-    });
-  } else if (
-    response.result === "success" &&
-    response.type === "Clan looking to join Alliance"
-  ) {
-    return dispatch({
-      type: FETCH_RECRUITMENT_POSTS_CLAN_ALLIANCE,
-      payload: response.content,
-    });
-  } else if (
-    response.result === "success" &&
-    response.type === "Player looking to join Clan or Alliance"
-  ) {
-    return dispatch({
-      type: FETCH_RECRUITMENT_POSTS_PLAYER_CLAN_ALLIANCE,
+      type: FETCH_RECRUITMENT_POSTS,
       payload: response.content,
     });
   } else if (response.result === "none exist") {
-    return dispatch({ type: FETCH_RECRUITMENT_POSTS_NONE_EXIST });
+    return dispatch({ type: FETCH_RECRUITMENT_POSTS, payload: [] });
   }
 };
 

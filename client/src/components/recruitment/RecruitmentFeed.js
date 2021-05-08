@@ -24,10 +24,9 @@ class RecruitmentFeed extends React.Component {
   };
   render() {
     let theme = "";
-    if (this.props.user.isSignedIn) {
-      theme = this.props.user.settings.webTheme;
+    if (this.props.auth.isSignedIn) {
+      theme = this.props.auth.settings.mode;
     }
-
     return (
       <div className={`ui ${theme} segment`}>
         <h3>Recruitment Feeds</h3>
@@ -43,46 +42,14 @@ class RecruitmentFeed extends React.Component {
             Clan looking for members
           </button>
           <button
-            onClick={(e) => this.renderMenu("Alliance looking for clans")}
+            onClick={(e) => this.renderMenu("Player looking to join Clan")}
             className={
-              this.state.menu === "Alliance looking for clans"
+              this.state.menu === "Player looking to join Clan"
                 ? "item active"
                 : ""
             }
           >
-            Alliance looking for clans
-          </button>
-          <button
-            onClick={(e) => this.renderMenu("Alliance looking for Players")}
-            className={
-              this.state.menu === "Alliance looking for Players"
-                ? "item active"
-                : ""
-            }
-          >
-            Alliance looking for Players
-          </button>
-          <button
-            onClick={(e) => this.renderMenu("Clan looking to join Alliance")}
-            className={
-              this.state.menu === "Clan looking to join Alliance"
-                ? "item active"
-                : ""
-            }
-          >
-            Clan looking to join Alliance
-          </button>
-          <button
-            onClick={(e) =>
-              this.renderMenu("Player looking to join Clan or Alliance")
-            }
-            className={
-              this.state.menu === "Player looking to join Clan or Alliance"
-                ? "item active"
-                : ""
-            }
-          >
-            Player looking to join Clan or Alliance
+            Player looking to join Clan
           </button>
         </div>
         <div className={`ui ${theme} segment`}>
@@ -95,7 +62,7 @@ class RecruitmentFeed extends React.Component {
 // map redux store to component props
 const mapStateToProps = (state) => {
   return {
-    user: state.user,
+    auth: state.auth,
   };
 };
 // export component with redux store connected

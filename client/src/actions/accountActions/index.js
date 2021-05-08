@@ -1,11 +1,7 @@
 // import history object
 import history from "../../History";
-// website Theme (light or dark("","inverted"))
-export const SITE_THEME = "SITE_THEME";
-export const setSiteTheme = () => async (dispatch) => {};
 
 // sign in and out action types
-export const CREATE_USER = "CREATE_USER";
 export const SIGN_IN = "SIGN_IN";
 export const SIGN_OUT = "SIGN_OUT";
 // action creator function to sign user in
@@ -16,10 +12,14 @@ export const signIn = (userId) => async (dispatch) => {
     // process the response string
   }).then((result) => result.json());
   // dispatch the response to redux store
-  return dispatch({
-    type: SIGN_IN,
-    payload: response,
-  });
+  if (response.result == "success") {
+    return dispatch({
+      type: SIGN_IN,
+      payload: response,
+    });
+  } else if (response.result == "user does not exist") {
+    history.push(`/register/${response.userId}`);
+  }
 };
 // action creator to sign user out
 export const signOut = () => {
@@ -28,7 +28,39 @@ export const signOut = () => {
     type: SIGN_OUT,
   };
 };
-// update users data
+export const createNewUser = (formValues, userId) => async (dispatch) => {
+  const response = await fetch("/api/user/create", {
+    method: "POST",
+    body: JSON.stringify({
+      name: formValues.playerName,
+      id: userId,
+    }),
+  }).then((result) => result.json());
+  console.log(response);
+  if (response.result === "success") {
+    history.push(`/add-account/${userId}`);
+    return dispatch({
+      type: SIGN_IN,
+      payload: response,
+    });
+  }
+};
+export const ADD_NEW_ACCOUNT_ERROR = "ADD_NEW_ACCOUNT_ERROR"; // action type
+// action creator - POST request to server to verify and add COC account to user
+export const addToAccount = (formValues, userId) => async (dispatch) => {
+  const response = await fetch(`/api/user/add-game-account?id=${userId}`, {
+    method: "POST",
+    body: JSON.stringify(formValues),
+  }).then((result) => result.json());
+  console.log("addtoaccount action: ", response);
+  if (response.result === "success") {
+    history.push("/account");
+    return;
+  } else {
+    return dispatch({ type: ADD_NEW_ACCOUNT_ERROR, payload: response });
+  }
+};
+// update users data in redux store
 export const UPDATE_USER_DATA = "UPDATE_USER_DATA";
 export const updateUserData = (userId) => async (dispatch) => {
   // http request server to get upto date data
@@ -46,19 +78,21 @@ export const updateUserData = (userId) => async (dispatch) => {
     return;
   }
 };
-
 // user settings
 export const UPDATE_USER_SETTINGS = "UPDATE_USER_SETTINGS";
 export const updateUserSettings = (userId, formValues) => async (dispatch) => {
-  const response = await fetch(`/user/update/settings?id=${userId}`, {
+  const response = await fetch(`/api/user/update/settings?id=${userId}`, {
     method: "POST",
     body: JSON.stringify(formValues),
   }).then((result) => result.json());
   if (response.result === "success") {
     history.push("/home");
+    window.location.reload();
     return dispatch({ type: UPDATE_USER_SETTINGS, payload: response.result });
   }
 };
+
+/* everything below this to be checked if keeping or deleting in upcoming dev */
 
 // login action types
 export const LOGIN_USER = "LOGIN_USER";

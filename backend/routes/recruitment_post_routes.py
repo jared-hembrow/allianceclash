@@ -2,24 +2,23 @@
 from flask import Flask, request
 # libaray imports
 import json
-from backend.sql_module import (
-    recruitment_insert_post,
-    query_existing_post,
-    query_post_for_view,
-    query_cocaccounts,
-    query_player
-    )
+from backend.sql_module import *
 
 #base app imports
 from backend import app
-
-@app.route('/recruitment/post', methods=['GET'])
+# get recruitment posts of the type request a and return them to react frontend
+@app.route('/api/recruitment/post', methods=['GET'])
 def get_recruitment_posts():
-    post_type = request.args.get('type')
-    print(post_type)
-    query_dict = query_post_for_view(post_type)
-    
-    return {"result": "success", "type": post_type, "content": query_dict}
+    print(request.args.get('type'))
+    # return query of (type) table in DB
+    try:
+        return {
+                "result": "success",
+                "type": request.args.get('type'), 
+                "content": Recruit_sql.query_post_for_view(request.args.get('type'))
+                }
+    except:
+        return {"result": "unsuccessful"}
 
 @app.route('/recruitment/clanlist', methods=["GET"])
 def get_user_clanlist():

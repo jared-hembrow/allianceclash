@@ -1,7 +1,7 @@
 import React from "react";
 import { Field, reduxForm } from "redux-form";
 
-class AddAccountForm extends React.Component {
+class AddToAccountForm extends React.Component {
   renderError = ({ error, touched }) => {
     if (touched && error) {
       return (
@@ -67,4 +67,4 @@ const validate = (formValues) => {
   }
   return errors;
 };
-export default reduxForm({ form: "addAccount", validate })(AddAccountForm);
+export default reduxForm({ form: "addAccount", validate })(AddToAccountForm);

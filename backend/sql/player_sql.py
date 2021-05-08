@@ -1,5 +1,5 @@
 from backend import db
-from backend.model_module import Player, Cocaccounts,Clanmemberslist
+from backend.model_module import *
 from backend.convert_module import player_sql_dict
 from backend.coc_module import call_coc
 from backend.function_module import date_compare, convert_class

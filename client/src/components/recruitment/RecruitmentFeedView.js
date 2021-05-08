@@ -5,9 +5,7 @@ import { connect } from "react-redux";
 import { fetchRecruitmentPosts } from "../../actions/recruitmentActions";
 // import components
 import ClanLookingMembers from "./ClanLookingMembers";
-import AllianceLookingClans from "./AllianceLookingClans";
-import AllianceLookingPlayers from "./AllianceLookingPlayers";
-import ClanLookingAlliance from "./ClanLookingAlliance";
+
 import PlayerLooking from "./PlayerLooking";
 import NoPosts from "./NoPosts";
 
@@ -26,53 +24,33 @@ class RecruitmentFeedView extends React.Component {
       this.setState({ postType: this.props.type });
     }
   }
-  selectType = (type) => {
-    switch (type) {
-      case "Clan looking for members":
-        return this.props.recruitmentPosts.clanLookingForMembers;
-      case "Alliance looking for clans":
-        return this.props.recruitmentPosts.allianceLookingForClans;
-      case "Alliance looking for Players":
-        return this.props.recruitmentPosts.allianceLookingForPlayers;
-      case "Clan looking to join Alliance":
-        return this.props.recruitmentPosts.clanLookingToJoinAlliance;
-      case "Player looking to join Clan or Alliance":
-        return this.props.recruitmentPosts.playerLookingToJoinClanOrAlliance;
-      default:
-        return null;
-    }
-  };
+
   renderPosts = (theme, type) => {
-    const postList = this.selectType(type);
-    if (postList === null) {
+    const posts = this.props.recruitmentPosts;
+    if (posts.length < 1) {
       return <NoPosts theme={theme} />;
     }
     switch (type) {
       case "Clan looking for members":
-        return <ClanLookingMembers postList={postList} theme={theme} />;
-      case "Alliance looking for clans":
-        return <AllianceLookingClans postList={postList} theme={theme} />;
-      case "Alliance looking for Players":
-        return <AllianceLookingPlayers postList={postList} theme={theme} />;
-      case "Clan looking to join Alliance":
-        return <ClanLookingAlliance postList={postList} theme={theme} />;
-      case "Player looking to join Clan or Alliance":
-        return <PlayerLooking postList={postList} theme={theme} />;
+        return <ClanLookingMembers postList={posts} theme={theme} />;
+      case "Player looking to join Clan":
+        return <PlayerLooking postList={posts} theme={theme} />;
       default:
         return null;
     }
   };
   render() {
-    const theme = this.props.theme;
-    const type = this.props.type;
-    return <div className={`ui ${theme}`}>{this.renderPosts(theme, type)}</div>;
+    return (
+      <div className={`ui ${this.props.theme}`}>
+        {this.renderPosts(this.props.theme, this.props.type)}
+      </div>
+    );
   }
 }
 // map redux store to component props
 
 const mapStateToProps = (state) => {
   return {
-    user: state.user,
     recruitmentPosts: state.recruitmentPosts,
   };
 };

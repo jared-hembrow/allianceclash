@@ -26,18 +26,6 @@ class Search extends React.Component {
       return null;
     }
     switch (this.state.type) {
-      case "alliance":
-        return results.map((alliance, idx) => {
-          return (
-            <AllianceCard
-              key={alliance.name + idx}
-              results={alliance}
-              user={user}
-              theme={theme}
-            />
-          );
-        });
-
       case "clan":
         return results.map((clan, idx) => (
           <ClanCard

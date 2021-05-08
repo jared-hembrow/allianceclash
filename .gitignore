@@ -1,6 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# dependencies
+
+# dependencies inside client folder -react-
 client/node_modules
 /.pnp
 .pnp.js
@@ -9,7 +10,7 @@ client/node_modules
 /coverage
 
 # production
-/build
+client/build
 
 
 # misc
@@ -23,8 +24,11 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+
 # image files
 static/
+# database
+database/
 #python git ignore settings
 # Byte-compiled / optimized / DLL files
 __pycache__/

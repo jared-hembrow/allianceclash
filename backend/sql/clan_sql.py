@@ -1,15 +1,5 @@
-from backend.model_module import (
-    Clan,
-    Clanmemberslist,
-    Warlog, 
-    Currentwar,
-    Allianceclans,
-    Allianceleaders,
-    Cocalliance,
-    Cocaccounts,
-    Player
-    )
-from backend.convert_module import clan_sql_dict,clan_member_sql_dict, warlog_sql_dict, currentwar_sql_dict 
+from backend.model_module import *
+from backend.convert_module import *
 from backend.function_module import date_compare, convert_class
 from backend.coc_module import call_coc
 from backend import db
@@ -48,7 +38,7 @@ def insert_clan(clan):
     query = Clan.query.filter_by(tag=insert_clan.tag).first()
     # insert each member in to Clanmemberslist table with for loop
     for member in clan["memberList"]:
-        insert_members = Clanmemberslist(
+        insert_members = Clan_members_list(
         tag=member["tag"],
         name=member["name"],
         role=member["role"],
@@ -95,11 +85,11 @@ def update_clan(tag):
     # update or insert members into clan members list Table
     for member in clan["memberList"]:
         # loop though all existing members
-        query = Clanmemberslist.query.filter_by(tag=member["tag"]).first()
+        query = Clan_members_list.query.filter_by(tag=member["tag"]).first()
         # if members desn't exist in database under clan insert into database
         if query is None:
             # create model object with member data
-            insert_members = Clanmemberslist(
+            insert_members = Clan_members_list(
                 tag=member["tag"],
                 name=member["name"],
                 role=member["role"],
@@ -118,7 +108,7 @@ def update_clan(tag):
             db.session.commit()
         else:
             # else if member exists update database with current data by  query and updating with dict
-            update_member = Clanmemberslist.query.filter_by(tag=member["tag"]).update(dict(
+            update_member = Clan_members_list.query.filter_by(tag=member["tag"]).update(dict(
                 tag=member["tag"],
                 name=member["name"],
                 role=member["role"],
@@ -135,7 +125,7 @@ def update_clan(tag):
             # commit to database
             db.session.commit()
     # query all member in table under clan
-    check_existing_members = Clanmemberslist.query.filter_by(clan_id=clan_query.id).all()
+    check_existing_members = Clan_members_list.query.filter_by(clan_id=clan_query.id).all()
     # loop though all members in table and check if they match up with current members in clan
     for member in check_existing_members:
         # set boolean to false
@@ -153,7 +143,7 @@ def update_clan(tag):
             continue
         # if no matchs change boolean then member is not currently in clan - delete out of table
         else:
-            delete_member = Clanmemberslist.query.filter_by(id=member.id).first()
+            delete_member = Clan_members_list.query.filter_by(id=member.id).first()
             db.session.delete(delete_member)
             db.session.commit()
             continue
@@ -179,7 +169,7 @@ def update_warlog(tag):
 # Table -Currentwar- -END line 196 -      
 # insert clans current war details into db
 def insert_currentwar(war):
-    insert_war = Currentwar(
+    insert_war = Current_war(
     state=war["state"],
     clan_tag=war["clan"]["tag"], 
     opponent_tag=war["opponent"]["tag"], 
@@ -196,7 +186,7 @@ def update_currentwar(tag):
     war = call_coc(tag, "currentwar")
     if war["state"] == "notInWar":
         return war
-    insert_war = Currentwar.query.filter_by(clan_tag=tag).update(dict(
+    insert_war = Current_war.query.filter_by(clan_tag=tag).update(dict(
         date_updated=datetime.utcnow(),
         state=war["state"],
         clan_tag=war["clan"]["tag"], 
@@ -242,7 +232,7 @@ def insert_or_update_warlog(tag):
 
 # query current war table and if doesn't exist insert with api data fetch from COC
 def insert_or_update_currentwar(tag):
-    query = Currentwar.query.filter_by(clan_tag=tag).first()
+    query = Current_war.query.filter_by(clan_tag=tag).first()
     if query is None:
         retrieved_data = call_coc(tag, 'currentwar')
         if retrieved_data["state"] == "inWar" or retrieved_data["state"] == "preparation":
@@ -259,12 +249,12 @@ def insert_or_update_currentwar(tag):
 # clan leave alliance
 def clan_leave_alliance(form):
     # query clan linked to alliance and delete
-    alliance_clans_query = Allianceclans.query.filter_by(alliance_id=form["alliance"],tag=form["clan"]).all()
+    alliance_clans_query = Alliance_clans.query.filter_by(alliance_id=form["alliance"],tag=form["clan"]).all()
     for clan in alliance_clans_query:
         db.session.delete(clan)
         db.session.commit()
     # query all leaders linked to alliance and clan and delete
-    leaders_query = Allianceleaders.query.filter_by(clan_tag=form["clan"], alliance_id=form["alliance"]).all()
+    leaders_query = Alliance_leaders.query.filter_by(clan_tag=form["clan"], alliance_id=form["alliance"]).all()
     for leader in leaders_query:
         db.session.delete(leader)
         db.session.commit()

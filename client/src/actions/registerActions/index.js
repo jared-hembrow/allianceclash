@@ -1,4 +1,7 @@
 import history from "../../History";
+
+/* pending deletion
+
 // Register new user (type & action)
 export const REGISTER_NEW_USER = "REGISTER_NEW_USER";
 export const registerNewUser = (formValues, userId) => async (dispatch) => {
@@ -31,3 +34,5 @@ export const addNewCocAccount = (id, formValues) => async (dispatch) => {
     return dispatch({ type: ADD_NEW_COC_ACCOUNT_ERROR, payload: response });
   }
 };
+
+end of pending area  */

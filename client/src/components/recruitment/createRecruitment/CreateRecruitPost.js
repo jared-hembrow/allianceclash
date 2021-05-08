@@ -10,9 +10,6 @@ import {
 } from "../../../actions/accountActions/index";
 // import components
 import ClanPostForm from "./ClanPostForm";
-import AllianceClanPostForm from "./AllianceClanPostForm";
-import AlliancePlayerPostForm from "./AlliancePlayerPostForm";
-import ClanAlliancePostForm from "./ClanAlliancePostForm";
 import PlayerPostForm from "./PlayerPostForm";
 
 // component
@@ -20,14 +17,10 @@ class CreateRecruitPost extends React.Component {
   state = {
     formType: "",
   };
-  componentDidMount() {
-    this.props.checkGameAccounts(this.props.auth.user.userDetails.id);
-    this.props.checkAllianceAccounts(this.props.auth.user.userDetails.id);
-    // check if posts have been made
-  }
   onSubmit = (formValues) => {
     const form = formValues;
     form.type = this.state.formType;
+    console.log(formValues);
     this.props.createNewRecruitmentPost(
       this.props.auth.user.userDetails.id,
       form
@@ -62,40 +55,8 @@ class CreateRecruitPost extends React.Component {
             heroLevels={true}
           />
         );
-      case "Alliance looking for clans":
-        return (
-          <AllianceClanPostForm
-            user={this.props.auth.user}
-            type={formType}
-            theme={theme}
-            onSubmit={this.onSubmit}
-            optionalFields={allianceOptionalFields}
-            clanLevels={true}
-          />
-        );
-      case "Alliance looking for Players":
-        return (
-          <AlliancePlayerPostForm
-            user={this.props.auth.user}
-            type={formType}
-            theme={theme}
-            onSubmit={this.onSubmit}
-            optionalFields={allianceOptionalFields}
-            townhallLevels={true}
-            heroLevels={true}
-          />
-        );
-      case "Clan looking to join Alliance":
-        return (
-          <ClanAlliancePostForm
-            user={this.props.auth.user}
-            type={formType}
-            theme={theme}
-            onSubmit={this.onSubmit}
-            optionalFields={clanOptionalFields}
-          />
-        );
-      case "Player looking to join Clan or Alliance":
+
+      case "Player looking to join Clan":
         return (
           <PlayerPostForm
             user={this.props.auth.user}
@@ -103,7 +64,6 @@ class CreateRecruitPost extends React.Component {
             theme={theme}
             onSubmit={this.onSubmit}
             optionalFields={playerOptionalFields}
-            looking={true}
           />
         );
       default:
@@ -113,25 +73,16 @@ class CreateRecruitPost extends React.Component {
   selectFormType = () => {
     let formList = [];
     if (
-      this.props.auth.user.cocaccounts.some(
+      this.props.auth.user.accounts.some(
         (account) => account.role === "leader"
       ) ||
-      this.props.auth.user.cocaccounts.some(
+      this.props.auth.user.accounts.some(
         (account) => account.role === "coLeader"
       )
     ) {
       formList = [...clanAdminList];
     }
-    if (
-      this.props.auth.user.cocalliance.some(
-        (account) => account.role === "leader"
-      ) ||
-      this.props.auth.user.cocalliance.some(
-        (account) => account.role === "co-leader"
-      )
-    ) {
-      formList = [...formList, ...allianceAdminList];
-    }
+
     formList = [...formList, ...playerList];
     return formList.map((form) => {
       return (
@@ -143,7 +94,11 @@ class CreateRecruitPost extends React.Component {
   };
   render() {
     if (!this.props.auth.isSignedIn) {
-      return null;
+      return (
+        <div>
+          <h3>Please Sign in Before Creating any Recruitment posts</h3>
+        </div>
+      );
     }
     const theme = this.props.auth.settings;
     return (
@@ -173,15 +128,9 @@ const mapStateToProps = (state) => {
   };
 };
 // list of form options to choose from
-const clanAdminList = [
-  "Clan looking for members",
-  "Clan looking to join Alliance",
-];
-const allianceAdminList = [
-  "Alliance looking for clans",
-  "Alliance looking for Players",
-];
-const playerList = ["Player looking to join Clan or Alliance"];
+const clanAdminList = ["Clan looking for members"];
+
+const playerList = ["Player looking to join Clan"];
 // clan looking for members optional fields array
 const clanOptionalFields = [
   { name: "clanName", label: "Enter clan name" },

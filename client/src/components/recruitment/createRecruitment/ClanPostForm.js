@@ -20,8 +20,10 @@ class ClanPostForm extends React.Component {
     recruitmentPost: "",
   };
   componentDidMount() {
-    this.props.checkRecruitmentPost(this.props.user.id, this.props.type);
-    this.props.fetchUserClans(this.props.user.id);
+    this.props.checkRecruitmentPost(
+      this.props.user.userDetails.id,
+      this.props.type
+    );
   }
   componentWillUnmount() {
     this.props.clearRecruitmentCheck();

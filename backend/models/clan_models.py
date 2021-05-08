@@ -26,9 +26,9 @@ class Clan(db.Model):
     war_league = db.Column(db.JSON, nullable=True)
     member_count = db.Column(db.Integer, nullable=False)
     labels = db.Column(db.JSON, nullable=True)
-    member_list = db.relationship('Clanmemberslist', backref="clan", lazy=True)
+    member_list = db.relationship('Clan_members_list', backref="clan", lazy=True)
 #table for members list
-class Clanmemberslist(db.Model):
+class Clan_members_list(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     tag = db.Column(db.String(20), nullable=False)
     name = db.Column(db.String(20), nullable=False)
@@ -51,7 +51,7 @@ class Warlog(db.Model):
     clan_id = db.Column(db.Integer, db.ForeignKey('clan.id'))
 
 # current war
-class Currentwar(db.Model):
+class Current_war(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date_updated = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     state = db.Column(db.String(20), nullable=False)

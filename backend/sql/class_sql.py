@@ -1,6 +1,7 @@
 from backend.sql_module import *
 from backend.model_module import *
 from backend.function_module import *
+from backend.coc_module import *
 # user class
 class User_sql:
     # create the class with the user_id
@@ -24,9 +25,9 @@ class User_sql:
         db.session.commit()
 
     #insert into cocaccounts table
-    def insert_cocaccounts(self, form):
+    def insert_account(self, form):
         # create class with form details
-        insert = Cocaccounts(
+        insert = Accounts(
             account_tag = form["tag"],
             clan_tag = form["clan_tag"], 
             role = form["role"], user_id = self.user_id
@@ -35,28 +36,17 @@ class User_sql:
         db.session.add(insert)
         db.session.commit()
     
-    # insert alliance
-    def insert_cocalliance(self, form):
-        insert = Cocalliance(
-            alliance_tag = form["tag"], 
-            role = form["role"], 
-            user_id = self.user_id
-            )
-        # insert into DB
-        db.session.add(insert)
-        db.session.commit()
-
     # create new user account
-    def create_new_user(self):
+    def create_new_user(self, form):
         # insert default settings into user table
         self.insert_user({
             "id": self.user_id,
-            "player_name": name_generator()
+            "player_name": form["name"]
         })
         self.insert_settings()
 
     #update user Table
-    def update_user(user_id,form):
+    def update_user(self,form):
         # query and update with dict
         user = User.query.filter_by(id = self.user_id).update(dict(
         player_name=form["playerName"]
@@ -65,7 +55,7 @@ class User_sql:
         db.session.commit()
 
     # update settings table
-    def update_settings(user_id, form):
+    def update_settings(self, form):
         # query and update with dict
         settings = Settings.query.filter_by(user_id=self.user_id).update(dict(
             web_theme=form["theme"]
@@ -80,23 +70,19 @@ class User_sql:
             return convert_class(User.query.filter_by(id=self.user_id).first())
         elif table == "settings":
             return convert_class(Settings.query.filter_by(user_id=self.user_id).first())
-        elif table == "cocaccounts":
-            return [convert_class(account) for account in Cocaccounts.query.filter_by(user_id=self.user_id).all()]
-        elif table == "cocalliance":
-            return [convert_class(alliance) for alliance in Cocalliance.query.filter_by(user_id=self.user_id).all()]
+        elif table == "accounts":
+            return [convert_class(account) for account in Accounts.query.filter_by(user_id=self.user_id).all()]
         # if all return all tables in a dict
         elif table == "all":
             return {
                 "user": convert_class(User.query.filter_by(id=self.user_id).first()),
                 "settings": convert_class(Settings.query.filter_by(user_id=self.user_id).first()),
-                "cocaccounts": [convert_class(account) for account in Cocaccounts.query.filter_by(user_id=self.user_id).all()],
-                "cocalliance": [convert_class(alliance) for alliance in Cocalliance.query.filter_by(user_id=self.user_id).all()]
+                "accounts": [convert_class(account) for account in Accounts.query.filter_by(user_id=self.user_id).all()],
             }
     def profile(self):
         user_table = self.query("all")
         player_profiles = list()
-        alliance_profiles = list()
-        for account in user_table["cocaccounts"]:
+        for account in user_table["accounts"]:
             print(account)
             player = Player_sql(account["account_tag"])
             player_data = player.profile()
@@ -105,40 +91,21 @@ class User_sql:
                 "player": player.profile(),
                 "clan": clan.profile()
             })
-        for alliance in user_table["cocalliance"]:
-            alliance = Alliance.query.filter_by(tag=alliance["alliance_tag"]).first()
-            alliance_profiles.append({
-                "alliance": convert_class(alliance),
-                "clans": [convert_class(clan) for clan in Allianceclans.query.filter_by(alliance_id=alliance.id).all()],
-                "leaders": [convert_class(leader) for leader in Allianceleaders.query.filter_by(alliance_id=alliance.id).all()],
-                "messageBoard": [convert_class(message) for message in Alliancemessageboard.query.filter_by(alliance_id=alliance.id).all()],
-                "chat": [convert_class(message) for message in Alliancechat.query.filter_by(alliance_id=alliance.id).all()],
-                "joinRequests": [convert_class(request) for request in Join_request.query.filter_by(alliance_tag=alliance.tag).all()],
-                "invites": [convert_class(invite) for invite in Alliance_invite.query.filter_by(alliance_tag=alliance.tag).all()] 
-            })
+        
         return {
             "user": user_table,
             "players": player_profiles,
-            "alliances": alliance_profiles
         }
 
     # delete coc account linked to user in table
     def delete_cocaccount(self,tag):
         # query table for linked accounts to user
-        query = Cocaccounts.query.filter_by(user_id=self.user_id, account_tag=tag).all()
+        query = Accounts.query.filter_by(user_id=self.user_id, account_tag=tag).all()
         # loop though matches and delete
         for entry in query:
             db.session.delete(entry)
             db.session.commit()
 
-    # delete coc alliance from user tables
-    def delete_cocalliance(self, tag):
-        # query table to find linked rows
-        query = Cocalliance.query.filter_by(alliance_tag=form["allianceTag"],user_id=form["user"]).all()
-        # loop though and delete rows
-        for entry in query:
-            db.session.delete(entry)
-            db.session.commit()
 
 
 
@@ -261,9 +228,9 @@ class Player_sql:
             update_dict["labels"] = {}
         # if the player has been in legends league in game enter the current data else enter empty dict
         if "legendStatistics" in player.keys():
-            insert_player.legend_statistics = player["legendStatistics"]
+            update_dict["legend_statistics"] = player["legendStatistics"]
         else:
-            insert_player.legend_statistics = {}
+            update_dict["legend_statistics"] = {}
         # query the database by the tag provided and update with dict created with COC data
         query = Player.query.filter_by(tag=tag).update(update_dict)
         # commit the update to the database
@@ -284,8 +251,8 @@ class Player_sql:
     def insert_or_update(self):
         # query player, cocaccount, clanmembers tables with tag
         query = Player.query.filter_by(tag = self.tag).first()
-        account_query = Cocaccounts.query.filter_by(account_tag = self.tag).first()
-        clan_member_query = Clanmemberslist.query.filter_by(tag = self.tag).first()
+        account_query = Accounts.query.filter_by(account_tag = self.tag).first()
+        clan_member_query = Clan_members_list.query.filter_by(tag = self.tag).first()
         
         print(query,account_query,clan_member_query)
         #if player does not exist in table insert with COC API data
@@ -300,7 +267,7 @@ class Player_sql:
             pass
         # compare roles and if different update the cocaccounts table
         elif not account_query.role == clan_member_query.role:
-            query = Cocaccounts.query.filter_by(account_tag=self.tag).update(dict(
+            query = Accounts.query.filter_by(account_tag=self.tag).update(dict(
                 role=clan_member_query.role
             ))
             db.session.commit()
@@ -321,23 +288,12 @@ class Clan_sql:
         self.tag = tag
 
     def profile(self):
-        # create a profile dict
-        profile = {
+        # create a profile dict and return it
+        return {
             "details": self.insert_or_update_clan(),
             "current_war": self.insert_or_update_currentwar(),
             "war_log": self.insert_or_update_warlog(),
-            "request": [convert_class(request) for request in Join_request.query.filter_by(clan_tag=self.tag).all()],
-            "invite": [convert_class(invite) for invite in Alliance_invite.query.filter_by(clan_tag=self.tag).all()]
             }
-        # query alliance clans table if clan is part of an alliance
-        alliance = Allianceclans.query.filter_by(tag=self.tag).first()
-        # if clan is part of an alliance append alliance data to profile dict
-        if alliance is None:
-            profile["alliance"] = {}
-        else:
-            profile["alliance"] = convert_class(Alliance.query.filter_by(id=alliance.alliance_id).first())
-        # return clan profile dict
-        return profile
 
     # insert into clan table
     def insert_clan(self, clan):
@@ -372,7 +328,7 @@ class Clan_sql:
         query = Clan.query.filter_by(tag=insert_clan.tag).first()
         # insert each member in to Clanmemberslist table with for loop
         for member in clan["memberList"]:
-            insert_members = Clanmemberslist(
+            insert_members = Clan_members_list(
             tag=member["tag"],
             name=member["name"],
             role=member["role"],
@@ -397,18 +353,30 @@ class Clan_sql:
 
     # insert clans current war details into db
     def insert_currentwar(self, war):
-        insert_war = Currentwar(
-        state=war["state"],
-        clan_tag=war["clan"]["tag"], 
-        opponent_tag=war["opponent"]["tag"], 
-        team_size=war["teamSize"], 
-        preparation_start_time=war["preparationStartTime"], 
-        start_time=war["startTime"], 
-        end_time=war["endTime"], 
-        clan=war["clan"], 
-        opponent=war["opponent"])
-        db.session.add(insert_war)
-        db.session.commit()
+        # clan is not currently in war or in CWL
+        if war["state"] == "notInWar":
+            insert_war = Current_war(
+            state=war["state"],
+            clan_tag=self.tag,
+            clan_id=Clan.query.filter_by(tag=self.tag).first().id
+            )
+            db.session.add(insert_war)
+            db.session.commit()
+        # clan is currently in war
+        else:
+            insert_war = Current_war(
+            state=war["state"],
+            clan_id=Clan.query.filter_by(tag=self.tag).first().id,
+            clan_tag=war["clan"]["tag"], 
+            opponent_tag=war["opponent"]["tag"], 
+            team_size=war["teamSize"], 
+            preparation_start_time=war["preparationStartTime"], 
+            start_time=war["startTime"], 
+            end_time=war["endTime"], 
+            clan=war["clan"], 
+            opponent=war["opponent"])
+            db.session.add(insert_war)
+            db.session.commit()
 
     # update db with clan profile
     def update_clan(self, tag):
@@ -440,11 +408,11 @@ class Clan_sql:
         # update or insert members into clan members list Table
         for member in clan["memberList"]:
             # loop though all existing members
-            query = Clanmemberslist.query.filter_by(tag=member["tag"]).first()
+            query = Clan_members_list.query.filter_by(tag=member["tag"]).first()
             # if members desn't exist in database under clan insert into database
             if query is None:
                 # create model object with member data
-                insert_members = Clanmemberslist(
+                insert_members = Clan_members_list(
                     tag=member["tag"],
                     name=member["name"],
                     role=member["role"],
@@ -463,7 +431,7 @@ class Clan_sql:
                 db.session.commit()
             else:
                 # else if member exists update database with current data by  query and updating with dict
-                update_member = Clanmemberslist.query.filter_by(tag=member["tag"]).update(dict(
+                update_member = Clan_members_list.query.filter_by(tag=member["tag"]).update(dict(
                     tag=member["tag"],
                     name=member["name"],
                     role=member["role"],
@@ -480,7 +448,7 @@ class Clan_sql:
                 # commit to database
                 db.session.commit()
         # query all member in table under clan
-        check_existing_members = Clanmemberslist.query.filter_by(clan_id=clan_query.id).all()
+        check_existing_members = Clan_members_list.query.filter_by(clan_id=clan_query.id).all()
         # loop though all members in table and check if they match up with current members in clan
         for member in check_existing_members:
             # set boolean to false
@@ -498,7 +466,7 @@ class Clan_sql:
                 continue
             # if no matchs change boolean then member is not currently in clan - delete out of table
             else:
-                delete_member = Clanmemberslist.query.filter_by(id=member.id).first()
+                delete_member = Clan_members_list.query.filter_by(id=member.id).first()
                 db.session.delete(delete_member)
                 db.session.commit()
                 continue
@@ -510,14 +478,14 @@ class Clan_sql:
         war = call_coc(self.tag, "currentwar")
         # if not in war update the state column
         if war["state"] == "notInWar":
-            insert_war = Currentwar.query.filter_by(clan_tag=self.tag).update(dict(
+            insert_war = Current_war.query.filter_by(clan_tag=self.tag).update(dict(
             date_updated=datetime.utcnow(),
             state=war["state"]
             ))
             db.session.commit()
         # update current war table with COC API data
         else:
-            insert_war = Currentwar.query.filter_by(clan_tag=self.tag).update(dict(
+            insert_war = Current_war.query.filter_by(clan_tag=self.tag).update(dict(
                 date_updated=datetime.utcnow(),
                 state=war["state"],
                 clan_tag=war["clan"]["tag"], 
@@ -556,25 +524,25 @@ class Clan_sql:
             # if up to date return data converted to dict
             clan_dict = convert_class(clan_query)
             # query and add members in list to clan_dict
-            clan_dict["member_list"] = [convert_class(member) for member in Clanmemberslist.query.filter_by(clan_id=clan_dict["id"]).all()]
+            clan_dict["member_list"] = [convert_class(member) for member in Clan_members_list.query.filter_by(clan_id=clan_dict["id"]).all()]
             return clan_dict
         # return the updated data as dict
         clan = convert_class(Clan.query.filter_by(tag=self.tag).first())
-        clan["member_list"] = [convert_class(member) for member in Clanmemberslist.query.filter_by(clan_id=clan["id"]).all()]
+        clan["member_list"] = [convert_class(member) for member in Clan_members_list.query.filter_by(clan_id=clan["id"]).all()]
         return clan
 
     # query current war table and if doesn't exist insert with api data fetch from COC
     def insert_or_update_currentwar(self):
         # query current war table
-        query = Currentwar.query.filter_by(clan_tag=self.tag).first()
+        query = Current_war.query.filter_by(clan_tag=self.tag).first()
         # if does not exist call COC API and insert into DB
         if query is None:
             retrieved_data = call_coc(self.tag, 'currentwar')
             self.insert_currentwar(retrieved_data)
         # if data not up to date call COC API and update DB
         elif date_compare(query.date_updated, 0, 0, 5):
-            update_currentwar(self.tag)
-        return convert_class(Currentwar.query.filter_by(clan_tag=self.tag).first())
+            self.update_currentwar()
+        return convert_class(Current_war.query.filter_by(clan_tag=self.tag).first())
         
     # query clan warlog or call coc api and insert if needed
     def insert_or_update_warlog(self):
@@ -597,312 +565,13 @@ class Clan_sql:
 
 
 
-class Alliance_sql:
-    def __init__(self, tag):
-        self.tag = tag
-    
-    def query_profile(self):
-        clans = self.query_allianceclans()
-        for clan in clans:
-            clan_sql = Clan_sql(clan["tag"])
-            clan["details"] = clan_sql.profile()
-        return {
-            "details": self.query_alliance(),
-            "clans": clans,
-            # complete this
-            "leaders": self.query_allianceleaders(),
-            "message_board": self.query_alliancemessageboard(),
-            "chat": self.query_alliancechat(),
-
-        }
-
-    # insert into Alliance Table
-    def insert_alliance(self, form):
-        # create Alliance class with form data
-        insert = Alliance(
-            tag=form["tag"],
-            name=form['name'],
-            description=form['description'], 
-            )
-        # insert class into DB
-        db.session.add(insert)
-        db.session.commit()
-
-    # insert clans into allianceclans table
-    def insert_alliance_clans(self, clans_list):
-        # query alliance table
-        query = Alliance.query.filter_by(tag=self.tag).first()
-        # verify if alliance exists if not return message
-        if query is None:
-            return "alliance does not exist"
-        # loop though clans in list
-        for clan in clans_list:
-            # create class with clans data and alliance id
-            insert_clan = Allianceclans(tag=clan["tag"], 
-            name=clan["name"], 
-            alliance_id=query.id )
-            # insert into DB
-            db.session.add(insert_clan)
-            db.session.commit()
-        return "success" 
-    
-    # insert into alliance leader table
-    def insert_allianceleaders(self, leaders_list):
-        # query alliance table
-        query = Alliance.query.filter_by(tag=self.tag).first()
-        # verify if alliance exists if not return message
-        if query is None:
-            return "alliance does not exist"
-        # loop though leaders list
-        for leader in leaders_list:
-            # create class with leaders data
-            insert = Allianceleaders(
-                tag=leader["id"],
-                clan_tag=leader["clanTag"],
-                role=leader["role"],
-                alliance_id=query.id
-                )
-            # insert into DB
-            db.session.add(insert)
-            db.session.commit()
-        return "success"
-    
-    # insert into alliance message board table
-    def insert_alliancemessageboard(self, post, user_id):
-        # query alliance table
-        query = Alliance.query.filter_by(tag=self.tag).first()
-        # verify if alliance exists if not return message
-        if query is None:
-            return "alliance does not exist"
-        # create class with alliance id, user id, and message body
-        insert = Alliancemessageboard(
-            message=post,
-            posted_by=user_id,
-            alliance_id=query.alliance_id )
-        # insert into DB
-        db.session.add(insert)
-        db.session.commit()
-    
-    # insert into alliance chat table
-    def insert_alliancechat(self, post, user_id):
-         # query alliance table
-        query = Alliance.query.filter_by(tag=self.tag).first()
-        # verify if alliance exists if not return message
-        if query is None:
-            return "alliance does not exist"
-        # create class with post body, alliance id, user id
-        insert = Alliancechat(
-            message=post,
-            posted_by=user_id,
-            alliance_id=query.alliance_id)
-        # insert into DB
-        db.session.add(insert)
-        db.session.commit()
-
-    # insert invites and requests into alliance_invite table
-    def insert_alliance_invite(self, form):
-        #create class with data
-        insert = Alliance_invite(
-            message=form["message"],
-            alliance_name=form["name"],
-            alliance_tag=form["tag"],
-            clan_name=form["clanName"],
-            clan_tag=form["clanTag"],
-            sent_by=form["user"]
-            )
-        # insert into DB
-        db.session.add(insert)
-        db.session.commit()
-
-    # insert into join request table
-    def insert_join_request(self, form):
-        # create class with data
-        insert = Join_request(
-            message=form["message"],
-            alliance_name=form["name"],
-            alliance_tag=form["tag"],
-            clan_name=form["clanName"],
-            clan_tag=form["clanTag"],
-            sent_by=form["user"]
-                )
-        # insert into DB
-        db.session.add(insert)
-        db.session.commit()
-
-    # insert or update invite
-    def insert_update_alliance_invite(self, form):
-        # query table to find invite
-        query = Alliance_invite.query.filter_by(alliance_name=form["name"],clan_tag=form["clanTag"]).first()
-        # check if invite already exists
-        if query is None:
-            self.insert_alliance_invite(form)
-        else:
-            # if already exists update table row with new data
-            Alliance_invite.query.filter_by(alliance_name=form["name"],clan_tag=form["clanTag"]).update(dict(
-                alliance_name=form["name"],
-                alliance_tag=form["tag"],
-                clan_name=form["clanName"],
-                clan_tag=form["clanTag"],
-                message=form["message"],
-                sent_by=form["user"]
-                    ))
-            # update DB
-            db.session.commit()
-    
-    # insert or update join requests table
-    def insert_update_join_request(self, form):
-        # query join request table
-        query = Join_request.query.filter_by(alliance_name=form["name"],clan_tag=form["clanTag"]).first()
-        # check if invite already exists
-        if query is None:
-            self.insert_join_request(form)
-        else:
-            # if already exists update table row with new data
-            Join_request.query.filter_by(alliance_name=form["name"],clan_tag=form["clanTag"]).update(dict(
-                alliance_name=form["name"],
-                alliance_tag=form["tag"],
-                clan_name=form["clanName"],
-                clan_tag=form["clanTag"],
-                message=form["message"],
-                sent_by=form["user"]
-                    ))
-            # update DB
-            db.session.commit()
-
-    # query and return alliance table
-    def query_alliance(self):
-        # query and return alliance table
-        return convert_class(Alliance.query.filter_by(tag=self.tag).first())
-    
-    # query and reutrn alliance clans
-    def query_allianceclans(self):
-        # query alliance table
-        query = Alliance.query.filter_by(tag=self.tag).first()
-        # query all clans in alliance and return in list
-        return [convert_class(clan) for clan in Allianceclans.query.filter_by(alliance_id=query.id).all()] 
-            
-    # query and return messages linked to alliance
-    def query_alliancemessageboard(self):
-        # query alliance table
-        query = Alliance.query.filter_by(tag=self.tag).first()
-        # verify if alliance exists if not return message
-        if query is None:
-            return "alliance does not exist"
-        # query message board table and return list of messages
-        return [convert_class(message) for message in Alliancemessageboard.query.filter_by(alliance_id=query.id).all()]
-    
-    # query and return chat messages linked to alliance
-    def query_alliancechat(self):
-        # query alliance table
-        query = Alliance.query.filter_by(tag=self.tag).first()
-        # verify if alliance exists if not return message
-        if query is None:
-            return "alliance does not exist"
-        # query messages and limit to 25 then return messages in a list
-        return [convert_class(message) for message in Alliancechat.query.filter_by(alliance_id=alliance_id).limit(25)]
-
-    # query join request linked to alliance
-    def query_join_request(self):
-        # return list of requests
-        return [convert_class(request) for request in Join_request.query.filter_by(alliance_tag=self.tag).all()]
-    
-    # query and return invites sent by linked alliance
-    def query_alliance_invite(clan_tag):
-        # return list of invites
-        return [convert_class(invite) for invite in Alliance_invite.query.filter_by(clan_tag=clan_tag).all()]
-
-    # delete join request
-    def delete_join_request(self, clan_tag):
-        # query request
-        query = Join_request.query.filter_by(alliance_tag=self.tag, clan_tag=clan_tag).first()
-        # delete request from DB
-        db.session.delete(query)
-        db.session.commit()
-    
-    # delete invite
-    def delete_alliance_invite(self, clan_tag):
-        # query invite
-        query = Alliance_invite.query.filter_by(alliance_tag=self.tag, clan_tag=clan_tag).first()
-        # delete invite from DB
-        db.session.delete(query)
-        db.session.commit()
-    
-    # handle Creation of new alliance
-    def create_new_alliance(self, form, user_id):
-        # query DB with perposed name
-        check_name = Alliance.query.filter_by(name=form["name"]).first()
-        # check if name exist already
-        if not check_name is None:
-            return {"result": "name already exists"}
-        # check clans perposed to be in alliance
-        clans_already_linked = list()
-        # loop though clans to check if clan is already linked to another alliance
-        for clan in form["clan"]:
-            check_clan = Allianceclans.query.filter_by(tag=clan["tag"]).first()
-            if check_clan is None:
-                continue
-            else:
-                clans_already_linked.append(clan["tag"])
-        # if any one of the clans are already in alliance return message
-        if len(clans_already_linked) > 0:
-            return {"result": "clans already linked to alliance", "clans": check_clans }
-        # handle the clans and leader
-            # creates lists
-        clan_list = list()
-        # query coc accounts table for player tag
-        user_account_query = Cocaccounts.query.filter_by(user_id=user_id).first()
-        # query player table 
-        user_player_query = Player.query.filter_by(tag=user_account_query.account_tag).first()
-        # create list with dict of leader/s to be inserted into DB
-        leader = [{
-            "id": user_id,
-            "clanTag": user_player_query.clan_tag,
-            "role": "leader"
-        }]
-        # clan list to be inserted into table
-        clan_list = list()
-        # loop over clans
-        for clan in form['clan']:
-            # query each clan
-            clan_query = Clan.query.filter_by(tag=clan['tag']).first()
-            # if clan does not exist in DB insert
-            if clan_query is None:
-                # call COC API for clan data
-                clan_data = call_coc(clan['tag'], 'clan')
-                time.sleep(0.1)
-                # if clan does not exist in COC API DB return Message to user
-                if "reason"  in clan_data.keys():
-                    return {"result": "clan does not exist", "clan": clan["tag"]}
-                # append clan to clan list
-                clan_list.append({
-                    "tag": clan_data["tag"],
-                    "name": clan_data["name"]
-                    })
-                # create class of clan and use insert or update method to insert into DB
-                clan = Clan_sql(clan["tag"])
-                clan.insert_or_update_clan()
-            else:
-                # append clan to clan list
-                clan_list.append(convert_class(clan_query))
-        # insert alliance into DB
-        self.insert_alliance(form)
-        # insert leader/s into leaders table
-        self.insert_allianceleaders(leader)
-        # insert clans into alliance clans table
-        alliance_clans_status = self.insert_alliance_clans(clan_list)
-        # if inserting alliance clans into table was unsuccessful return message to user
-        if alliance_clans_status == "alliance does not exist":
-            return {"result": "unsuccessful"}
-        # if successful return message to user
-        return {"result": "success"}
-
 
 class Recruit_sql:
     # sql insertion functions
     def insert_post(form, user, recruitment_type):
     #insert Clanrecruitmentpost (Clan looking for members)
         if recruitment_type == 'Clan looking for members':
-            insert_post = Clanrecruitmentpost(
+            insert_post = Clan_recruitment_post(
             title=form['title'],
             recruitment_post=form['recruitmentPost'],
             clan_name=form['clanName'],
@@ -916,43 +585,10 @@ class Recruit_sql:
             )
             db.session.add(insert_post)
             db.session.commit()
-    # insert Alliancerecruitmentpost (Alliance looking for clans & Alliance looking for Players )
-        elif recruitment_type == 'Alliance looking for clans':
-            insert_post = Alliancerecruitmentpost(
-            title=form['title'],
-            recruitment_post=form['recruitmentPost'],
-            alliance_name=form['allianceName'],
-            alliance_tag=form['allianceTag'],
-            recruitment_type='clan',
-            user_id=user
-            )
-            db.session.add(insert_post)
-            db.session.commit()
-        elif recruitment_type == 'Alliance looking for Players':
-            insert_post = Alliancerecruitmentpost(
-            title=form['title'],
-            recruitment_post=form['recruitmentPost'],
-            alliance_name=form['allianceName'],
-            alliance_tag=form['allianceTag'],
-            recruitment_type='player',
-            user_id=user
-            )
-            db.session.add(insert_post)
-            db.session.commit()
-    # insert Clanalliancerecruitmentpost (Clan looking to join Alliance)
-        elif recruitment_type == 'Clan looking to join Alliance':
-            insert_post = Clanalliancerecruitmentpost(
-            title=form['title'],
-            recruitment_post=form['recruitmentPost'],
-            clan_name=form['clanName'],
-            clan_tag=form['clanTag'],
-            user_id=user
-            )
-            db.session.add(insert_post)
-            db.session.commit()
+    
     # insert Playerrecruitmentpost (Player looking to join Clan or Alliance)
-        elif recruitment_type == 'Player looking to join Clan or Alliance':
-            insert_post = Playerrecruitmentpost(
+        elif recruitment_type == 'Player looking to join Clan':
+            insert_post = Player_recruitment_post(
             title=form['title'],
             recruitment_post=form['recruitmentPost'],
             player_name=form['playerName'],
@@ -966,31 +602,14 @@ class Recruit_sql:
     # check if user has already made a post
     def query_post(post_type, user):
         if post_type == 'Clan looking for members':
-            query = Clanrecruitmentpost.query.filter_by(user_id=user).first()
+            query = Clan_recruitment_post.query.filter_by(user_id=user).first()
             if query is None:
                 return None
             else:
                 return convert_class(query)
-        elif post_type == 'Alliance looking for clans':
-            query = Alliancerecruitmentpost.query.filter_by(user_id=user).first()
-            if query is None:
-                return None
-            else:
-                return convert_class(query)
-        elif post_type == 'Alliance looking for Players':
-            query = Alliancerecruitmentpost.query.filter_by(user_id=user).first()
-            if query is None:
-                return None
-            else:
-                return convert_class(query)
-        elif post_type == 'Clan looking to join Alliance':
-            query = Clanalliancerecruitmentpost.query.filter_by(user_id=user).first()
-            if query is None:
-                return None
-            else:
-                return convert_class(query)
-        elif post_type == 'Player looking to join Clan or Alliance':
-            query = Playerrecruitmentpost.query.filter_by(user_id=user).first()
+        
+        elif post_type == 'Player looking to join Clan':
+            query = Player_recruitment_post.query.filter_by(user_id=user).first()
             if query is None:
                 return None
             else:
@@ -1001,23 +620,19 @@ class Recruit_sql:
     def query_post_for_view(post_type):
         # query and return posts in a list according to post type
         if post_type == 'Clan looking for members':
-            return [convert_class(post) for post in Clanrecruitmentpost.query.order_by('date_posted').all()]
-        elif post_type == 'Alliance looking for clans':
-            return [convert_class(post) for post in Alliancerecruitmentpost.query.order_by('date_posted').all()]
-        elif post_type == 'Alliance looking for Players':
-            return [convert_class(post) for post in Alliancerecruitmentpost.query.order_by('date_posted').all()]
-        elif post_type == 'Clan looking to join Alliance':
-            return [convert_class(post) for post in Clanalliancerecruitmentpost.query.order_by('date_posted').all()]
-        elif post_type == 'Player looking to join Clan or Alliance':
-            return [convert_class(post) for post in Playerrecruitmentpost.query.order_by('date_posted').all()]
+            print("in clan")
+            return [convert_class(post) for post in Clan_recruitment_post.query.order_by('date_posted').all()]
+        elif post_type == 'Player looking to join Clan':
+            print("in player")
+            return [convert_class(post) for post in Player_recruitment_post.query.order_by('date_posted').all()]
         else:
             return {"result": "invalid form submission"}
 
     # sql insertion functions
-    def recruitment_update_post(form, user_id, recruitment_type):
+    def update_post(form, user_id, recruitment_type):
     #insert Clanrecruitmentpost (Clan looking for members)
         if recruitment_type == 'Clan looking for members':
-            Clanrecruitmentpost.query.filter_by(user_id=user_id).update(dict(
+            Clan_recruitment_post.query.filter_by(user_id=user_id).update(dict(
             title=form['title'],
             recruitment_post=form['recruitmentPost'],
             clan_name=form['clanName'],
@@ -1030,40 +645,9 @@ class Recruit_sql:
             user_id=user
             ))
             db.session.commit()
-    # insert Alliancerecruitmentpost (Alliance looking for clans & Alliance looking for Players )
-        elif recruitment_type == 'Alliance looking for clans':
-            Alliancerecruitmentpost.query.filter_by(user_id=user_id).update(dict(
-            title=form['title'],
-            recruitment_post=form['recruitmentPost'],
-            alliance_name=form['allianceName'],
-            alliance_tag=form['allianceTag'],
-            recruitment_type='clan',
-            user_id=user
-            ))
-            db.session.commit()
-        elif recruitment_type == 'Alliance looking for Players':
-            Alliancerecruitmentpost.query.filter_by(user_id=user_id).update(dict(
-            title=form['title'],
-            recruitment_post=form['recruitmentPost'],
-            alliance_name=form['allianceName'],
-            alliance_tag=form['allianceTag'],
-            recruitment_type='player',
-            user_id=user
-            ))
-            db.session.commit()
-    # insert Clanalliancerecruitmentpost (Clan looking to join Alliance)
-        elif recruitment_type == 'Clan looking to join Alliance':
-            Clanalliancerecruitmentpost.query.filter_by(user_id=user_id).update(dict(
-            title=form['title'],
-            recruitment_post=form['recruitmentPost'],
-            clan_name=form['clanName'],
-            clan_tag=form['clanTag'],
-            user_id=user
-            ))
-            db.session.commit()
-    # insert Playerrecruitmentpost (Player looking to join Clan or Alliance)
-        elif recruitment_type == 'Player looking to join Clan or Alliance':
-            Playerrecruitmentpost.query.filter_by(user_id=user_id).update(dict(
+    
+        elif recruitment_type == 'Player looking to join Clan':
+            Player_recruitment_post.query.filter_by(user_id=user_id).update(dict(
             title=form['title'],
             recruitment_post=form['recruitmentPost'],
             player_name=form['playerName'],

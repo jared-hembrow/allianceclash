@@ -2,7 +2,7 @@
 import React from "react";
 import { connect } from "react-redux";
 import { clearResults } from "../../actions/searchActions/index";
-import ProfileStats from "../cocAccount/ProfileStats";
+import ProfileStats from "../profile/ProfileStats";
 // component
 class PlayerCard extends React.Component {
   componentWillUnmount() {

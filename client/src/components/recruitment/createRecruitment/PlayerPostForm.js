@@ -19,7 +19,10 @@ class PlayerPostForm extends React.Component {
     blockSubmit: false,
   };
   componentDidMount() {
-    this.props.checkRecruitmentPost(this.props.type);
+    this.props.checkRecruitmentPost(
+      this.props.user.userDetails.id,
+      this.props.type
+    );
   }
   componentWillUnmount() {
     this.props.clearRecruitmentCheck();
@@ -27,40 +30,18 @@ class PlayerPostForm extends React.Component {
   onSubmit = (formValues) => {
     const form = formValues;
     // if hero & townhall level requirements on form then set default values if unentered
-    if (this.props.checkRecruitmentPost.status === "existing post") {
-      if (!compareOneDay(this.props.checkRecruitmentPost.post.datePosted)) {
+    if (this.props.recruitmentPostCheck.status === "existing post") {
+      if (!compareOneDay(this.props.recruitmentPostCheck.post.datePosted)) {
         return;
-      }
-    }
-    if (this.props.heroLevels) {
-      if (!formValues.townhallRequirement) {
-        form.townhallRequirement = 3;
-      }
-      if (!formValues.BarbarianKingLevelRequirements) {
-        form.BarbarianKingLevelRequirements = 0;
-      }
-      if (!formValues.ArcherQueenLevelRequirements) {
-        form.ArcherQueenLevelRequirements = 0;
-      }
-
-      if (!formValues.GrandWardenLevelRequirements) {
-        form.GrandWardenLevelRequirements = 0;
-      }
-      if (!formValues.RoyalChampionLevelRequirements) {
-        form.RoyalChampionLevelRequirements = 0;
       }
     }
     // if looking is set to true
     if (this.props.looking) {
       if (!formValues.looking) {
-        form.looking = "Both";
+        form.looking = "Normal";
       }
     }
-    if (this.props.clanLevels) {
-      if (!formValues.clanLevelRequirement) {
-        form.clanLevelRequirement = 1;
-      }
-    }
+
     if (!formValues.title) {
       return;
     }
@@ -95,41 +76,7 @@ class PlayerPostForm extends React.Component {
       </div>
     );
   };
-  // render all townhall levels as options
-  renderTownhallRequirements = (itemsArray) => {
-    return itemsArray.map((item) => {
-      return (
-        <option key={item} value={item}>
-          {item}
-        </option>
-      );
-    });
-  };
-  // render all hero level fields as number input fields with max values as hero in-game max levels
-  renderInputHeroRequirements = ({ maxLevel, input, label, meta }) => {
-    const className = `ui ${meta.error && meta.touched ? "red message" : ""}`;
-    return (
-      <div>
-        <label>{label}</label>
-        <input type="number" {...input} min="0" max={maxLevel} />
-        <div className={className}>{this.renderError(meta)}</div>
-      </div>
-    );
-  };
-  // render hero level requirements as a Field element
-  renderHeroRequirements = (levels) => {
-    return levels.map((hero) => {
-      return (
-        <Field
-          name={hero.name.replace(" ", "") + "LevelRequirements"}
-          key={hero.name}
-          component={this.renderInputHeroRequirements}
-          label={hero.name}
-          maxLevel={hero.maxLevel}
-        />
-      );
-    });
-  };
+
   // render optional input fields from this.props.optionalFields pass in from parent component
   renderOptionalFields = (fields) => {
     return fields.map((field) => {
@@ -143,17 +90,6 @@ class PlayerPostForm extends React.Component {
         />
       );
     });
-  };
-  // render what clan level requirement is in a number input element
-  renderClanLevelField = ({ input, label, meta }) => {
-    const className = `ui ${meta.error && meta.touched ? "red message" : ""}`;
-    return (
-      <div>
-        <label>{label}</label>
-        <input type="number" {...input} />
-        <div className={className}>{this.renderError(meta)}</div>
-      </div>
-    );
   };
   // render options list for what you are looking for select Field
   renderLooking = (list) => {
@@ -197,48 +133,22 @@ class PlayerPostForm extends React.Component {
             {this.renderOptionalFields(this.props.optionalFields)}
           </div>
         </div>
-        {/* render if townhallLevels is set to true */}
-        {this.props.townhallLevels ? (
-          <div className="field">
-            <label>Enter minimum townhall requirements</label>
-            <Field name="townhallRequirement" component="select">
-              <option value="" disabled>
-                Choose TH level
-              </option>
-              {this.renderTownhallRequirements(thLevels)}
-            </Field>
-          </div>
-        ) : null}
-        {/* render hero levels requirements if heroLevels set to true */}
-        {this.props.heroLevels ? (
-          <div className="field">
-            <label>
-              <h3>Enter hero requirements (if left blank default will be 0)</h3>
-            </label>
-            {this.renderHeroRequirements(heroLevels)}
-          </div>
-        ) : null}
-        {/* render clan levels field if set to true */}
-        {this.props.clanLevels ? (
-          <div className="field">
-            <Field
-              name="clanLevelRequirement"
-              component={this.renderClanLevelField}
-              label="Enter required clan level"
-            />
-          </div>
-        ) : null}
-        {this.props.looking ? (
-          <div className="field">
-            <label>are you looking for a Clan, Alliance or Both</label>
-            <Field name="looking" component="select">
-              <option value="" disabled>
-                select what you are looking for
-              </option>
-              {this.renderLooking(["Clan", "Alliance", "Both"])}
-            </Field>
-          </div>
-        ) : null}
+        <label>What kind of clan are you looking for?</label>
+        <div className="field">
+          <Field name="looking" component="select">
+            <option value="" disabled>
+              select what you are looking for
+            </option>
+            {this.renderLooking([
+              "Competitive",
+              "Casual",
+              "Friendly",
+              "War focused",
+              "Normal",
+            ])}
+          </Field>
+        </div>
+
         <button className={`ui ${theme} primary button`}>Submit</button>
       </form>
     );
@@ -299,6 +209,7 @@ const mapStateToProps = (state) => {
   };
 };
 // export component
+
 PlayerPostForm = reduxForm({
   form: "createRecruitPost",
   enableReinitialize: true,

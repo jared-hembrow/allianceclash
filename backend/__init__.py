@@ -8,7 +8,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = '50ef82b874d2edbd155b60b7'
 
 
-app.config['SQLALCHEMY_DATABASE_URI'] ='sqlite:///site.db'
+app.config['SQLALCHEMY_DATABASE_URI'] ='sqlite:///database/site.db'
 db = SQLAlchemy(app)
 # from backend import db
 # from backend.models import *(all classes you want)
@@ -31,19 +31,20 @@ app.config['CORS_RESOURCES'] = {r"/user/*": {"origins": "*"}}
 from backend.routes import basic_routes
 # user account routes
 from backend.routes import user_routes
+
 #from backend.routes.user import login_routes
 
 #from backend.routes.coc import account_routes
 # coc war routes
-from backend.routes import war_routes
+#from backend.routes import war_routes
 
 # routes fro clan datea
-from backend.routes import clan_routes
+#from backend.routes import clan_routes
 
 # coc player routes - fetch player profile
-from backend.routes import player_routes
+#from backend.routes import player_routes
 # alliance routes
-from backend.routes import alliance_routes
+#from backend.routes import alliance_routes
 # recruitment routes
 from backend.routes import create_recruitment_post_routes
 from backend.routes import recruitment_post_routes

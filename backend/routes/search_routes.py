@@ -1,21 +1,14 @@
 # flask imports
 from flask import Flask, request
 from backend import app
-from backend.sql_module import (
-    search_alliance, 
-    search_clan,search_player, 
-    insert_update_alliance_invite,
-    insert_update_join_request
-    )
+from backend.sql_module import *
+    
 import json
 @app.route('/api/search', methods=["GET"])
 def search_database():
     search_type = request.args.get('type')
     term = request.args.get('term')
     print(search_type, term)
-    if search_type == "alliance":
-        alliance_search_list = search_alliance(term)
-        return {"result": "success", "content": alliance_search_list}
     if search_type == "clan":
         clan_search_list = search_clan(term)
         return {"result": "success", "content": clan_search_list}
