@@ -3,6 +3,9 @@ import React from "react";
 const WarOverView = (props) => {
   const theme = props.theme;
   const data = props.war;
+  if (data.state === "notInWar") {
+    return null;
+  }
   return (
     <table className={`ui ${theme} very basic collasping celled table`}>
       <tbody>
@@ -12,7 +15,7 @@ const WarOverView = (props) => {
             <h4 className={`ui ${theme} image header`}>
               <img
                 alt="banner"
-                src={data.clan.badgeUrls.medium}
+                src={data.clan.badge_url.medium}
                 className="ui avatar image"
               />
               <div className="content">

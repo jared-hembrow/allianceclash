@@ -17,6 +17,9 @@ import {
   checkRecruitmentReducer,
   fetchRecruitmentPostsReducer,
 } from "./recruitmentReducers/recruitmentReducers";
+// missed war attack reducers
+import { missedAttacksListReducer } from "./clanReducers";
+
 /*
 import {
   gameAccountReducer,
@@ -78,6 +81,7 @@ registerStatus: registerNewUserReducer,
 
   */
   // clan
+  missedAttacksList: missedAttacksListReducer,
   clan: clansDetailsReducer,
   allianceInviteList: allianceInviteListReducer,
   // coc

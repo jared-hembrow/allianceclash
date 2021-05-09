@@ -65,4 +65,14 @@ class Current_war(db.Model):
     opponent = db.Column(db.JSON, nullable=True)
     clan_id = db.Column(db.Integer, db.ForeignKey('clan.id'))
 
-    
+#table for missed attacks
+class Missed_attacks(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    name = db.Column(db.String(25), nullable=False)
+    tag = db.Column(db.String(25), nullable=False)
+    war_type = db.Column(db.String(30), nullable=False)
+    missed_attacks_number = db.Column(db.Integer, nullable=False)
+    submitted_by = db.Column(db.String(200), nullable=False)
+    clan_tag = db.Column(db.String(25), nullable=False)
+    clan_id = db.Column(db.Integer, db.ForeignKey('clan.id'))

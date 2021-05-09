@@ -39,7 +39,7 @@ from backend.routes import user_routes
 #from backend.routes import war_routes
 
 # routes fro clan datea
-#from backend.routes import clan_routes
+from backend.routes import clan_routes
 
 # coc player routes - fetch player profile
 #from backend.routes import player_routes

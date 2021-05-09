@@ -26,8 +26,7 @@ class ClanPage extends React.Component {
           theme={theme}
           user={{
             userDetails: user.userDetails,
-            cocAccounts: user.cocaccounts,
-            cocAlliance: user.cocalliance,
+            accounts: user.accounts,
           }}
           rerender={this.rerenderState}
         />

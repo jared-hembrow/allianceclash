@@ -8,6 +8,7 @@ import WarOverView from "../currentWar/WarOverView";
 import TimeLeft from "../currentWar/TimeLeft";
 import ClanDetailsCard from "./ClanDetailsCard";
 import ClanManagement from "./clanManagement/ClanManagement";
+import MissedAttackList from "./missedAttacks/MissedAttacksList";
 
 class ClanContainer extends React.Component {
   state = {
@@ -60,17 +61,19 @@ class ClanContainer extends React.Component {
             />
           </div>
         );
+      case "missed attacks":
+        return <MissedAttackList user={user} theme={theme} profile={profile} />;
       default:
         return <h2>In construction</h2>;
     }
   };
   renderLeaderContent = (profile, user) => {
-    for (let i = 0; i < user.cocAccounts.length; i++) {
+    for (let i = 0; i < user.accounts.length; i++) {
       if (
-        (user.cocAccounts[i].role === "coLeader" &&
-          user.cocAccounts[i].clan_tag === profile.details.tag) ||
-        (user.cocAccounts[i].role === "leader" &&
-          user.cocAccounts[i].clan_tag === profile.details.tag)
+        (user.accounts[i].role === "coLeader" &&
+          user.accounts[i].clan_tag === profile.details.tag) ||
+        (user.accounts[i].role === "leader" &&
+          user.accounts[i].clan_tag === profile.details.tag)
       ) {
         return <option value="management">Management</option>;
       }
@@ -90,11 +93,7 @@ class ClanContainer extends React.Component {
           margin: "1rem",
         }}
       >
-        <ClanDetailsCard
-          profile={this.props.profile.details}
-          alliance={this.props.profile.alliance}
-          theme={theme}
-        />
+        <ClanDetailsCard profile={this.props.profile.details} theme={theme} />
         <div className={`ui ${theme.mode} segment`}>
           <form>
             <div className="ui form">
@@ -107,6 +106,7 @@ class ClanContainer extends React.Component {
                     <option value="warlog">War Log</option>
                     <option value="members">Members</option>
                     <option value="war">War</option>
+                    <option value="missed attacks">Missed Attacks</option>
                   </optgroup>
                   <optgroup label="more">
                     {this.renderLeaderContent(

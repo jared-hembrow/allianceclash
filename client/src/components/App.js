@@ -22,10 +22,10 @@ import CreateRecruitPost from "./recruitment/createRecruitment/CreateRecruitPost
 import RecruitmentFeed from "./recruitment/RecruitmentFeed";
 // search components
 import Search from "./search/Search";
-
-/*
 // Clan Page
 import ClanPage from "./clan/ClanPage";
+/*
+
 // current war page component
 import CurrentWar from "./currentWar/CurrentWar";
 // post war attack component
@@ -69,6 +69,8 @@ class App extends React.Component {
             <Route path="/recruitment/feed" exact component={RecruitmentFeed} />
             {/* Search route */}
             <Route path="/search" exact component={Search} />
+            {/* Clan routes - Clan Page */}
+            <Route path="/clan" exact component={ClanPage} />
             {/* dev iso
             {/* homepage routes 
             <Route path="/" exact component={Homepage} />
@@ -79,8 +81,7 @@ class App extends React.Component {
             {/* create or add pages - add a clash account to your profile - create an Alliance 
             <Route path="/add" exact component={AddToAccount} />
             {/* maint 
-            {/* Clan routes - Clan Page 
-            <Route path="/clan" exact component={ClanPage} />
+            
             {/* current war page 
             <Route path="/:clanTag/currentwar" exact component={CurrentWar} />
             {/* post war attack 

@@ -8,6 +8,46 @@ from backend.sql_module import *
 #base app imports
 from backend import app, db
 
+@app.route('/api/user/missed-attack', methods=["POST",'GET'])
+def add_missed_attack():
+    # posting a missed attack from front end
+    if request.method == "POST":
+        # decode the incoming post body into Dict
+        form = json.loads(request.data.decode('utf-8'))
+        print(form)
+        try:
+            # create class model with form data
+            insert = Missed_attacks(
+                name=form["missedAttack"]["name"],
+                tag=form["missedAttack"]["tag"],
+                war_type=form["missedAttack"]["type"],
+                missed_attacks_number=form["missedAttack"]["missedAttacks"],
+                submitted_by=form["userId"],
+                clan_tag=form["clanTag"],
+                clan_id=form["clanId"]
+                )
+            # insert data into DB
+            db.session.add(insert)
+            db.session.commit()
+            # return result
+            return {"result": "success"}
+        except:
+            return {"result": "unsuccessful"}
+    elif request.method == "GET":
+        print(type(request.args.get('id')))
+        query = Missed_attacks.query.filter_by(clan_id=str(request.args.get('id'))).all()
+
+
+        return {"result": "success", "content": [convert_class(attack) for attack in query]}
+
+
+
+
+
+# everything below pending actions
+
+
+
 @app.route('/coc/clan/profile', methods=["GET"])
 def view_clan_profile():
     tag = request.args.get('tag')

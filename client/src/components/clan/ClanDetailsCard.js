@@ -31,9 +31,6 @@ export const ClanDetailsCard = (props) => {
             {clanProfile.name}
           </div>
           <div className="meta">{clanProfile.tag}</div>
-          <div className="meta">
-            {props.alliance ? `Alliance: ${props.alliance.name}` : ""}
-          </div>
           <div className="description">{clanProfile.description}</div>
         </div>
       </div>
